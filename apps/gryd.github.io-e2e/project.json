@@ -1,0 +1,27 @@
+{
+  "sourceRoot": "apps/gryd.github.io-e2e/src",
+  "projectType": "application",
+  "targets": {
+    "e2e": {
+      "executor": "@nrwl/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/gryd.github.io-e2e/cypress.json",
+        "devServerTarget": "gryd.github.io:serve:development"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "gryd.github.io:serve:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/gryd.github.io-e2e/**/*.{js,ts}"]
+      }
+    }
+  },
+  "tags": [],
+  "implicitDependencies": ["gryd.github.io"]
+}

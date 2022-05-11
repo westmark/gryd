@@ -1,0 +1,82 @@
+{
+  "sourceRoot": "apps/gryd.github.io/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/web:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "compiler": "babel",
+        "outputPath": "dist/apps/gryd.github.io",
+        "index": "apps/gryd.github.io/src/index.html",
+        "baseHref": "/",
+        "main": "apps/gryd.github.io/src/main.tsx",
+        "polyfills": "apps/gryd.github.io/src/polyfills.ts",
+        "tsConfig": "apps/gryd.github.io/tsconfig.app.json",
+        "assets": [
+          "apps/gryd.github.io/src/favicon.ico",
+          "apps/gryd.github.io/src/assets"
+        ],
+        "styles": ["apps/gryd.github.io/src/styles.css"],
+        "scripts": [],
+        "webpackConfig": "@nrwl/react/plugins/webpack"
+      },
+      "configurations": {
+        "development": {
+          "extractLicenses": false,
+          "optimization": false,
+          "sourceMap": true,
+          "vendorChunk": true
+        },
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/gryd.github.io/src/environments/environment.ts",
+              "with": "apps/gryd.github.io/src/environments/environment.prod.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/web:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "gryd.github.io:build",
+        "hmr": true
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "gryd.github.io:build:development"
+        },
+        "production": {
+          "buildTarget": "gryd.github.io:build:production",
+          "hmr": false
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/gryd.github.io/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/gryd.github.io"],
+      "options": {
+        "jestConfig": "apps/gryd.github.io/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

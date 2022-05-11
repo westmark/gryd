@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "projects": {
+    "gryd.github.io": "apps/gryd.github.io",
+    "gryd.github.io-e2e": "apps/gryd.github.io-e2e"
+  }
+}

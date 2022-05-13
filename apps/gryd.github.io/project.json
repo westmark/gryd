@@ -4,7 +4,9 @@
   "targets": {
     "build": {
       "executor": "@nrwl/web:webpack",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "defaultConfiguration": "production",
       "options": {
         "compiler": "babel",
@@ -18,7 +20,9 @@
           "apps/gryd.github.io/src/favicon.ico",
           "apps/gryd.github.io/src/assets"
         ],
-        "styles": ["apps/gryd.github.io/src/styles.css"],
+        "styles": [
+          "apps/gryd.github.io/src/styles.css"
+        ],
         "scripts": [],
         "webpackConfig": "@nrwl/react/plugins/webpack"
       },
@@ -64,14 +68,20 @@
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
+      "outputs": [
+        "{options.outputFile}"
+      ],
       "options": {
-        "lintFilePatterns": ["apps/gryd.github.io/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": [
+          "apps/gryd.github.io/**/*.{ts,tsx,js,jsx}"
+        ]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/gryd.github.io"],
+      "outputs": [
+        "coverage/apps/gryd.github.io"
+      ],
       "options": {
         "jestConfig": "apps/gryd.github.io/jest.config.ts",
         "passWithNoTests": true

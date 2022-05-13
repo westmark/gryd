@@ -1,6 +1,9 @@
 {
   "version": 2,
   "projects": {
+    "gryd": "libs/gryd",
+    "gryd-editor": "libs/gryd-editor",
+    "gryd-editor-e2e": "apps/gryd-editor-e2e",
     "gryd.github.io": "apps/gryd.github.io",
     "gryd.github.io-e2e": "apps/gryd.github.io-e2e"
   }

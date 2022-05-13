@@ -14,7 +14,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@gryd/editor": ["libs/gryd-editor/src/index.ts"],
+      "@gryd/react": ["libs/gryd/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

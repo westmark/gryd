@@ -15,12 +15,12 @@ export type GridDimension = {
 
 export type GridRowLayout<ID extends string = string> = {
   id?: ID;
-  height?: string | GridDimension;
+  height?: GridDimension | null;
 };
 
 export type GridColumnLayout<ID extends string = string> = {
   id?: ID;
-  width?: string | GridDimension;
+  width?: GridDimension | null;
 };
 
 export type GridMediaQueryLayout<ID extends string = string> = {

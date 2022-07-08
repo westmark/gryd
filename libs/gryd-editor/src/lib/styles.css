@@ -14,6 +14,7 @@
   border-radius: 2px;
   will-change: border-color;
   transition: border 0.2s ease-in-out;
+  z-index: 5;
 }
 
 .grid-editor-cell-marker:hover {
@@ -30,34 +31,20 @@
   cursor: pointer;
 }
 
-.grid-editor-cell-control {
+.grid-editor-cell-dimensions-container {
   position: relative;
-  z-index: 10;
-  height: calc(100% - 4px);
-  width: calc(100% - 4px);
-  margin: 2px;
 }
 
-.grid-editor-cell-control.enabled {
-  z-index: 11;
+.grid-editor-cell-dimensions-container.row {
+  height: 100%;
+  width: 0;
+  left: 100%;
 }
 
-.grid-editor-floating-button.grid-editor-cell-control-toggle-button {
-  opacity: 0;
-  pointer-events: none;
-  will-change: opacity;
-  transition: opacity 0.2s ease-out;
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  width: 30px;
-  height: 30px;
-}
-
-.grid-editor-cell-control:hover
-  > .grid-editor-floating-button.grid-editor-cell-control-toggle-button {
-  pointer-events: all;
-  opacity: 1;
+.grid-editor-cell-dimensions-container.column {
+  width: 100%;
+  height: 0;
+  top: 100%;
 }
 
 .grid-editor-cell-dimensions {
@@ -68,25 +55,32 @@
   overflow: hidden;
   transition: width 0.1s ease-in-out;
   z-index: 5;
+  border: 1px solid #ddd;
+  border-radius: 9000px/10000px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .grid-editor-cell-dimensions.expanded {
-  width: 250px;
+  width: 280px;
   z-index: 6;
   justify-content: flex-start;
   padding-left: 20px;
 }
 
 .grid-editor-cell-dimensions.row {
-  left: 0;
+  left: 20px;
   top: 50%;
-  transform: translate(-15%, -50%);
+  transform: translate(0, -50%);
 }
 
 .grid-editor-cell-dimensions.column {
   left: 50%;
-  top: 0;
-  transform: translate(-50%, -15%);
+  top: 20px;
+  transform: translate(-50%, 0);
 }
 
 .grid-editor-cell-dimensions__unit-picker {
@@ -130,7 +124,7 @@
   border: 1px solid #888;
   border-width: 0 0 1px 0;
   padding: 5px 5px 5px 0;
-  width: 40px;
+  width: 60px;
   margin-right: 10px;
   text-align: center;
 }
@@ -142,6 +136,7 @@
 
 .grid-editor-cell-dimensions__value-input:focus {
   border-color: #222;
+  outline: 0;
 }
 
 .grid-editor-cell-dimensions__commit-button {
@@ -155,6 +150,11 @@
   cursor: pointer;
   background-color: white;
   color: #333;
+  will-change: opacity;
+}
+
+.grid-editor-cell-dimensions__commit-button:disabled {
+  opacity: 0.4;
 }
 
 .grid-editor-cell-dimensions__commit-button
@@ -162,11 +162,11 @@
   margin-left: 4px;
 }
 
-.grid-editor-cell-dimensions__commit-button:hover {
+.grid-editor-cell-dimensions__commit-button:hover:not(:disabled) {
   border-color: #aaa;
 }
 
-.grid-editor-cell-gutter {
+.grid-editor-cell-gutter-bar {
   position: absolute;
   z-index: 5;
   background-color: transparent;
@@ -174,11 +174,11 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-.grid-editor-cell-gutter:hover {
+.grid-editor-cell-gutter-bar:hover {
   background-color: #333;
 }
 
-.grid-editor-cell-gutter.row {
+.grid-editor-cell-gutter-bar.row {
   width: 100%;
   height: 3px;
   left: 0;
@@ -187,7 +187,7 @@
   cursor: row-resize;
 }
 
-.grid-editor-cell-gutter.column {
+.grid-editor-cell-gutter-bar.column {
   width: 3px;
   height: 100%;
   right: 100%;
@@ -196,8 +196,27 @@
   cursor: col-resize;
 }
 
+.grid-editor-cell-gutter-add {
+  position: absolute;
+  z-index: 5;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: white;
+  cursor: pointer;
+  border: 1px solid #ddd;
+}
+
+.grid-editor-cell-gutter-add > .lucide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .grid-editor-cell-gutter-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
+  isolation: isolate;
 }

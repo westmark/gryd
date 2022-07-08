@@ -1,8 +1,12 @@
 import React, { useContext, useMemo } from 'react';
 
 type GridEditorContextShape = {
-  editCellId?: string;
-  requestEditCellId: (editCellId?: string) => void;
+  editDimensionsId?: string;
+  requestEditDimensionsId: (
+    editDimensionsId: string,
+    capture: boolean,
+    lock: boolean
+  ) => void;
 };
 
 export const GridEditorContext = React.createContext<
@@ -15,18 +19,33 @@ export const useGridEditorContext = () =>
 export const GridEditorContextProvider = ({
   children,
 }: React.PropsWithChildren<unknown>) => {
-  const [editCellId, setEditCellId] = React.useState<string | undefined>();
+  const [editDimensions, setEditDimensionsId] = React.useState<{
+    id: string | undefined;
+    lock: boolean;
+  }>();
 
-  const requestEditCellId = React.useCallback((id: string | undefined) => {
-    setEditCellId(id);
-  }, []);
+  const requestEditDimensionsId = React.useCallback(
+    (editDimensionsId: string, capture: boolean, lock: boolean) => {
+      setEditDimensionsId((old) => {
+        if (!old || old?.id === editDimensionsId || !old?.lock) {
+          if (!capture) {
+            return old?.id === editDimensionsId ? undefined : old;
+          } else {
+            return { id: editDimensionsId, lock, capture };
+          }
+        }
+        return old;
+      });
+    },
+    []
+  );
 
   const value = useMemo<GridEditorContextShape>(
     () => ({
-      editCellId,
-      requestEditCellId,
+      editDimensionsId: editDimensions?.id,
+      requestEditDimensionsId,
     }),
-    [editCellId, requestEditCellId]
+    [editDimensions, requestEditDimensionsId]
   );
 
   return (

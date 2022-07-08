@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import styled from 'styled-components';
 
 import { withKnobs } from '@storybook/addon-knobs';
 import { Grid } from './Grid';
 import { GridLayout } from './types';
 import { GridArea } from './GridArea';
+import { toGridDimension } from './utils';
 
 export default {
   title: 'Grid',
@@ -36,15 +38,15 @@ const simpleLayout: GridLayout<Gutters> = {
       columns: [
         {
           id: Gutters.first,
-          width: '100px',
+          width: toGridDimension('100px')!,
         },
         {
           id: Gutters.middle,
-          width: '1fr',
+          width: toGridDimension('1fr')!,
         },
         {
           id: Gutters.last,
-          width: '50px',
+          width: toGridDimension('50px')!,
         },
         {
           id: Gutters.end,
@@ -53,15 +55,15 @@ const simpleLayout: GridLayout<Gutters> = {
       rows: [
         {
           id: Gutters.first,
-          height: '100px',
+          height: toGridDimension('100px')!,
         },
         {
           id: Gutters.middle,
-          height: '1fr',
+          height: toGridDimension('1fr')!,
         },
         {
           id: Gutters.last,
-          height: '50px',
+          height: toGridDimension('50px')!,
         },
         {
           id: Gutters.end,

@@ -19,6 +19,7 @@ export const GridEditorCellMarker = ({
   return (
     <div
       className="grid-editor-cell-marker"
+      data-key={`marker-${row.id}-${column.id}`}
       style={makeGridAreaStyle([row.id, column.id, 'span 1', 'span 1'])}
     ></div>
   );

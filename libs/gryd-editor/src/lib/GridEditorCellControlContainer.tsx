@@ -1,22 +1,20 @@
-import update from 'immutability-helper';
 import {
-  GridColumnLayout,
   GridDimension,
   GridMediaQueryLayout,
   GridRowLayout,
+  makeGridAreaStyle,
   toGridDimension,
 } from '@gryd/react';
-import { FunctionComponent, useCallback } from 'react';
-import {
-  GridEditorCellControl,
-  OnDimensionChange,
-} from './GridEditorCellControl';
-import { GridEditorCellMarker } from './GridEditorCellMarker';
+import update from 'immutability-helper';
+import { Fragment, useCallback, useMemo } from 'react';
+import { GridEditorCellDimensions } from './GridEditorCellDimensions';
 import {
   GridEditorCellGutter,
   OnGutterMoveCallback,
 } from './GridEditorCellGutter';
+import { GridEditorCellMarker } from './GridEditorCellMarker';
 import { calculateNewLayout } from './gridEditorUtils';
+import { CellRenderDefinition, OnDimensionChange } from './types';
 
 interface GridEditorCellControlContainerProps<ID extends string = string> {
   mediaQueryLayout: GridMediaQueryLayout<ID>;
@@ -29,9 +27,7 @@ export const GridEditorCellControlContainer = <ID extends string = string>({
   gridBoundingBox,
   onMediaQueryChange,
 }: GridEditorCellControlContainerProps<ID>) => {
-  const cells: Array<
-    [GridRowLayout<ID>, GridColumnLayout<ID>, boolean, boolean]
-  > = [];
+  const cells: Array<CellRenderDefinition<ID>> = [];
   for (let r = 0; r < mediaQueryLayout.rows.length - 1; r++) {
     for (let c = 0; c < mediaQueryLayout.columns.length - 1; c++) {
       cells.push([
@@ -39,6 +35,8 @@ export const GridEditorCellControlContainer = <ID extends string = string>({
         mediaQueryLayout.columns[c],
         r > 0 && c === 0,
         c > 0 && r === 0,
+        c === mediaQueryLayout.columns.length - 2,
+        r === mediaQueryLayout.rows.length - 2,
       ]);
     }
   }
@@ -97,10 +95,12 @@ export const GridEditorCellControlContainer = <ID extends string = string>({
               pixels
             );
 
-            const newRows = mediaQueryLayout.rows.map((row, i) => ({
-              ...row,
-              width: newSizes[i],
-            }));
+            const newRows = mediaQueryLayout.rows.map<GridRowLayout<ID>>(
+              (row, i) => ({
+                ...row,
+                height: newSizes[i],
+              })
+            );
 
             const newMediaQueryLayout = update(mediaQueryLayout, {
               rows: { $set: newRows },
@@ -147,16 +147,24 @@ export const GridEditorCellControlContainer = <ID extends string = string>({
     ]
   );
 
+  const rowDimensions = useMemo(
+    () =>
+      mediaQueryLayout.rows
+        .map((r) => r.height)
+        .filter((r) => Boolean(r?.unit)) as Array<GridDimension>,
+    [mediaQueryLayout.rows]
+  );
+
+  const columnDimensions = useMemo(
+    () =>
+      mediaQueryLayout.columns
+        .map((c) => c.width)
+        .filter((c) => c?.unit) as Array<GridDimension>,
+    [mediaQueryLayout.columns]
+  );
+
   return (
     <>
-      {cells.map(([row, column]) => (
-        <GridEditorCellControl
-          key={`control-${row.id}-${column.id}`}
-          row={row}
-          column={column}
-          onDimensionChange={handleCellDimensionChange}
-        />
-      ))}
       {cells.map(([row, column]) => (
         <GridEditorCellMarker
           key={`marker-${row.id}-${column.id}`}
@@ -175,6 +183,59 @@ export const GridEditorCellControlContainer = <ID extends string = string>({
             onMove={handleGutterMove}
           />
         ) : null
+      )}
+
+      {cells.map(
+        ([row, column, , , showRowDimensions, showColumnDimensions]) => (
+          <Fragment key={`dimensions-${row.id}-${column.id}`}>
+            {showRowDimensions && row.height && row.id && column.id ? (
+              <div
+                key={`dimensions-row-${row.id}-${column.id}`}
+                data-key={`dimensions-row-${row.id}-${column.id}`}
+                className="grid-editor-cell-dimensions-container row"
+                style={makeGridAreaStyle([
+                  row.id,
+                  column.id,
+                  'span 1',
+                  'span 1',
+                ])}
+              >
+                <GridEditorCellDimensions
+                  key="row"
+                  direction="row"
+                  id={row.id}
+                  dimension={row.height}
+                  gridBoundingBox={gridBoundingBox}
+                  allDimensions={rowDimensions}
+                  onDimensionChange={handleCellDimensionChange}
+                />
+              </div>
+            ) : null}
+            {showColumnDimensions && column.width && column.id && row.id ? (
+              <div
+                key={`dimensions-column-${row.id}-${column.id}`}
+                data-key={`dimensions-column-${row.id}-${column.id}`}
+                className="grid-editor-cell-dimensions-container column"
+                style={makeGridAreaStyle([
+                  row.id,
+                  column.id,
+                  'span 1',
+                  'span 1',
+                ])}
+              >
+                <GridEditorCellDimensions
+                  key="column"
+                  direction="column"
+                  id={column.id}
+                  dimension={column.width}
+                  gridBoundingBox={gridBoundingBox}
+                  allDimensions={columnDimensions}
+                  onDimensionChange={handleCellDimensionChange}
+                />
+              </div>
+            ) : null}
+          </Fragment>
+        )
       )}
     </>
   );

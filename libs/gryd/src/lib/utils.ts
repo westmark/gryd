@@ -21,7 +21,7 @@ export const getMatchedMediaQuery = <ID extends string = string>(
 };
 
 export const makeGridAreaStyle = <ID extends string = string>(
-  area: Array<ID>
+  area: Array<ID | number>
 ): CSSProperties => ({
   gridArea: area.join(' / '),
 });
@@ -88,7 +88,7 @@ export const getGridDimensionString = (
 };
 
 export const toGridDimension = (
-  dim: string | GridDimension | undefined
+  dim: string | GridDimension | undefined | null
 ): GridDimension | null => {
   if (isGridDimension(dim)) {
     return dim;

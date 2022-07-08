@@ -133,7 +133,13 @@ export const useHotkeys = (inOptions: HotkeyOptions) => {
   }, [options]);
 };
 
-export const useMouseHover = (options: { leaveTimeout?: number } = {}) => {
+export const useMouseHover = (
+  options: {
+    leaveTimeout?: number;
+    onMouseEnter?: (event: React.MouseEvent) => void;
+    onMouseLeave?: (event: React.MouseEvent) => void;
+  } = {}
+) => {
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [halt, setHalt] = useState(false);
   const haltRef = useRef(halt);
@@ -145,27 +151,39 @@ export const useMouseHover = (options: { leaveTimeout?: number } = {}) => {
     };
   }, []);
 
-  const onMouseEnter = useCallback(() => {
-    if (!haltRef.current) {
-      setIsMouseOver(true);
-    }
-  }, []);
+  const leaveTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const onMouseEnter = useCallback(
+    (event: React.MouseEvent) => {
+      if (!haltRef.current) {
+        setIsMouseOver(true);
+        options?.onMouseEnter?.(event);
+        if (leaveTimeoutRef.current) {
+          clearTimeout(leaveTimeoutRef.current);
+          leaveTimeoutRef.current = undefined;
+        }
+      }
+    },
+    [options]
+  );
+
   const onMouseLeave = useCallback(
-    () =>
-      setTimeout(() => {
+    (event: React.MouseEvent) =>
+      (leaveTimeoutRef.current = setTimeout(() => {
         if (!haltRef.current) {
           setIsMouseOver(false);
+          options?.onMouseLeave?.(event);
         }
-      }, options.leaveTimeout ?? 0),
-    [options.leaveTimeout]
+      }, options.leaveTimeout ?? 0)),
+    [options]
   );
   const onBlur = useCallback(
     () =>
-      setTimeout(() => {
+      (leaveTimeoutRef.current = setTimeout(() => {
         if (!haltRef.current) {
           setIsMouseOver(false);
         }
-      }, options.leaveTimeout ?? 0),
+      }, options.leaveTimeout ?? 0)),
     [options.leaveTimeout]
   );
   const onMouseMove = useCallback(() => {
@@ -262,4 +280,60 @@ export const calculateNewLayout = (
   }
 
   return sizesCopy;
+};
+
+export const getTotalStaticSize = (dims: Array<GridDimension>) =>
+  dims.reduce((acc, cur) => {
+    if (staticSizes.has(cur.unit)) {
+      return acc + cur.value;
+    }
+    return acc;
+  }, 0);
+
+export const getTotalFractionSize = (dims: Array<GridDimension>) =>
+  dims.reduce((acc, cur) => {
+    if (cur.unit === 'fr') {
+      return acc + cur.value;
+    }
+    return acc;
+  }, 0);
+
+export const convertToUnit = (
+  from: GridDimension,
+  toUnit: GridDimensionUnit,
+  totalSizeInPx: number,
+  dims: Array<GridDimension>
+): GridDimension => {
+  if (from.unit === toUnit) {
+    return from;
+  }
+  const totalStaticSize = getTotalStaticSize(dims);
+  const totalFractionSize = getTotalFractionSize(dims);
+
+  let fromSize = from.value;
+  if (from.unit === 'fr') {
+    fromSize =
+      ((totalSizeInPx - totalStaticSize) / totalFractionSize) * from.value;
+  } else if (from.unit === '%') {
+    fromSize = totalSizeInPx * (from.value / 100);
+  }
+
+  if (toUnit === 'fr') {
+    const oneFr =
+      (totalSizeInPx - (totalStaticSize + fromSize)) / totalFractionSize;
+    return {
+      unit: toUnit,
+      value: fromSize / oneFr,
+    };
+  } else if (toUnit === '%') {
+    return {
+      unit: toUnit,
+      value: (fromSize / totalSizeInPx) * 100,
+    };
+  }
+
+  return {
+    unit: toUnit,
+    value: fromSize,
+  };
 };

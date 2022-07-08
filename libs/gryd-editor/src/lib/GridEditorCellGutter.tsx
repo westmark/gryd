@@ -4,6 +4,7 @@ import {
   GridRowLayout,
   makeGridAreaStyle,
 } from '@gryd/react';
+import { BoxSelect, Plus } from 'lucide-react';
 import React, {
   CSSProperties,
   useCallback,
@@ -34,14 +35,31 @@ export const GridEditorCellGutter = <ID extends string = string>({
   gridBoundingBox,
   onMove,
 }: GridEditorCellGutterProps<ID>) => {
-  const style = useMemo<CSSProperties | undefined>(() => {
+  const gutterBarStyle = useMemo<CSSProperties | undefined>(() => {
     if (direction === 'row' && gridBoundingBox) {
       return {
-        width: gridBoundingBox.height,
+        width: gridBoundingBox.width,
       };
     } else if (direction === 'column' && gridBoundingBox) {
       return {
-        height: gridBoundingBox.width,
+        height: gridBoundingBox.height,
+      };
+    }
+    return {};
+  }, [direction, gridBoundingBox]);
+
+  const gutterAddStyle = useMemo<CSSProperties | undefined>(() => {
+    if (direction === 'row' && gridBoundingBox) {
+      return {
+        left: gridBoundingBox.width,
+        marginLeft: '1rem',
+        transform: 'translateY(-50%)',
+      };
+    } else if (direction === 'column' && gridBoundingBox) {
+      return {
+        top: gridBoundingBox.height,
+        marginTop: '1rem',
+        transform: 'translateX(-50%)',
       };
     }
     return {};
@@ -114,12 +132,17 @@ export const GridEditorCellGutter = <ID extends string = string>({
     <div
       className="grid-editor-cell-gutter-wrapper"
       style={makeGridAreaStyle([row.id, column.id, 'span 1', 'span 1'])}
+      data-key={`gutter-${row.id}-${column.id}`}
     >
       <div
-        className={classNames('grid-editor-cell-gutter', direction)}
-        style={style}
+        className={classNames('grid-editor-cell-gutter-bar', direction)}
+        style={gutterBarStyle}
         onPointerDown={handlePointerDown}
       ></div>
+      <div className="grid-editor-cell-gutter-add" style={gutterAddStyle}>
+        <Plus size={16} />
+        <BoxSelect size={20} />
+      </div>
     </div>
   );
 };

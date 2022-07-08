@@ -1,118 +1,109 @@
 import {
   classNames,
   getGridDimensionString,
-  GridColumnLayout,
   GridDimension,
   GridDimensionUnit,
-  GridRowLayout,
-  makeGridAreaStyle,
-  toGridDimension,
 } from '@gryd/react';
-import { Check, Cross, X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useMouseHover } from './gridEditorUtils';
-
-interface GridEditorCellDimensionsPropsBase {
-  id: string;
+import { Check, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useGridEditorContext } from './GridEditorContext';
+import { convertToUnit, useMouseHover } from './gridEditorUtils';
+import { OnDimensionChange } from './types';
+interface GridEditorCellDimensionsProps<ID extends string = string> {
+  id: ID;
+  dimension: GridDimension;
   direction: 'row' | 'column';
-  onDimensionChange: (
-    direction: 'row' | 'column',
-    dimension: GridDimension
-  ) => void;
+  gridBoundingBox?: DOMRect;
+  allDimensions: Array<GridDimension>;
+  onDimensionChange: OnDimensionChange<ID>;
 }
-
-type GridEditorCellDimensionsProps<ID extends string = string> =
-  | (GridEditorCellDimensionsPropsBase & {
-      row?: GridRowLayout<ID>;
-      column?: GridColumnLayout<ID>;
-      width?: never;
-      height?: never;
-    })
-  | (GridEditorCellDimensionsPropsBase & {
-      row?: never;
-      column?: never;
-      width?: GridDimension | string;
-      height?: GridDimension | string;
-    });
 
 export const GridEditorCellDimensions = <ID extends string = string>({
   id,
-  row,
-  column,
-  width,
-  height,
+  dimension,
   direction,
+  gridBoundingBox,
+  allDimensions,
   onDimensionChange,
 }: GridEditorCellDimensionsProps<ID>) => {
-  const { isMouseOver, setHalt, ...listeners } = useMouseHover({
-    leaveTimeout: 1000,
-  });
-
+  const editId = `${direction}-${id}`;
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const { requestEditDimensionsId, editDimensionsId } = useGridEditorContext();
   const [dirty, setDirty] = useState(false);
-
-  const resetValues = useCallback(() => {
-    let dim: GridDimension | null;
-    if (direction === 'row') {
-      dim = toGridDimension(row?.height ?? width);
-    } else {
-      dim = toGridDimension(column?.width ?? height);
-    }
-    if (dim) {
-      setValue(dim.value);
-      setUnit(dim.unit);
-    }
-    setValueError(false);
-  }, [direction, height, row, width, column]);
-
-  const dimension = useMemo(() => {
-    if (direction === 'row') {
-      return toGridDimension(row?.height ?? width);
-    } else {
-      return toGridDimension(column?.width ?? height);
-    }
-  }, [column?.width, direction, height, row?.height, width]);
 
   const [unit, setUnit] = useState<GridDimensionUnit>(dimension?.unit ?? 'px');
   const [value, setValue] = useState<GridDimension['value'] | null>(
     dimension?.value ?? 0
   );
+
   const [strValue, setStrValue] = useState<string>(value?.toString() ?? '');
   const [valueError, setValueError] = useState(false);
 
-  useEffect(() => {
-    resetValues();
-  }, [resetValues]);
+  const resetValues = useCallback(() => {
+    setValue(dimension.value);
+    setUnit(dimension.unit);
+    setStrValue(dimension.value.toString());
+    setValueError(false);
+  }, [dimension.value, dimension.unit]);
 
-  useEffect(() => {
-    if (!isMouseOver) {
-      resetValues();
+  const handleMouseEnter = useCallback(() => {
+    requestEditDimensionsId(editId, true, false);
+  }, [editId, requestEditDimensionsId]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!dirty && !valueError && editDimensionsId === editId) {
+      requestEditDimensionsId(editId, false, false);
     }
-  }, [isMouseOver, resetValues]);
+  }, [dirty, editDimensionsId, editId, requestEditDimensionsId, valueError]);
+
+  const { setHalt, isMouseOver, ...listeners } = useMouseHover({
+    leaveTimeout: 1000,
+    onMouseEnter: handleMouseEnter,
+    onMouseLeave: handleMouseLeave,
+  });
 
   const handleUnitChange = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       const unit = event.currentTarget.getAttribute('data-unit');
       setUnit(unit as GridDimensionUnit);
-      setHalt(true);
       setDirty(true);
+      requestEditDimensionsId(editId, true, true);
+      if (dimension && unit && gridBoundingBox && allDimensions) {
+        const converted = convertToUnit(
+          dimension,
+          unit as GridDimensionUnit,
+          direction === 'row' ? gridBoundingBox.height : gridBoundingBox?.width,
+          allDimensions
+        );
+        setValue(converted.value);
+        setStrValue(converted.value.toString());
+        setTimeout(() => inputRef.current?.select(), 1);
+      }
     },
-    [setHalt]
+    [
+      allDimensions,
+      dimension,
+      direction,
+      editId,
+      gridBoundingBox,
+      requestEditDimensionsId,
+    ]
   );
 
   const handleValueChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = Number(event.target.value);
       setStrValue(event.target.value);
+      requestEditDimensionsId(editId, true, true);
       if (typeof value === 'number' && !Number.isNaN(value)) {
         setValue(value);
-        setHalt(true);
         setDirty(true);
         setValueError(false);
       } else {
         setValue(null);
       }
     },
-    [setHalt]
+    [editId, requestEditDimensionsId]
   );
 
   const handleCommit = useCallback(
@@ -121,55 +112,92 @@ export const GridEditorCellDimensions = <ID extends string = string>({
         value !== null &&
         event.currentTarget.getAttribute('data-action') === 'commit'
       ) {
-        onDimensionChange(direction, { value, unit });
+        onDimensionChange(direction === 'row' ? { row: id } : { column: id }, {
+          value,
+          unit,
+        });
       } else {
         resetValues();
       }
+      requestEditDimensionsId(editId, true, false);
       setDirty(false);
-      setHalt(false);
     },
-    [direction, onDimensionChange, resetValues, setHalt, unit, value]
+    [
+      direction,
+      editId,
+      id,
+      onDimensionChange,
+      requestEditDimensionsId,
+      resetValues,
+      unit,
+      value,
+    ]
   );
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (value !== null && !valueError && event.key === 'Enter') {
-        onDimensionChange(direction, { value, unit });
+        onDimensionChange(direction === 'row' ? { row: id } : { column: id }, {
+          value,
+          unit,
+        });
         setDirty(false);
         setHalt(false);
+        requestEditDimensionsId(editId, false, false);
       }
       if (value === null) {
         setValueError(true);
       }
     },
-    [direction, onDimensionChange, setHalt, unit, value, valueError]
+    [
+      direction,
+      editId,
+      id,
+      onDimensionChange,
+      requestEditDimensionsId,
+      setHalt,
+      unit,
+      value,
+      valueError,
+    ]
   );
 
-  const handleInputFocus = useCallback(() => setHalt(true), [setHalt]);
+  const handleInputFocus = useCallback(() => {
+    requestEditDimensionsId(editId, true, true);
+    setHalt(true);
+    inputRef.current?.setSelectionRange(0, strValue.length);
+  }, [editId, requestEditDimensionsId, setHalt, strValue.length]);
+
   const handleInputBlur = useCallback(() => {
+    setHalt(false);
     if (value === null) {
       setValueError(true);
-    } else {
-      setHalt(true);
     }
-  }, [setHalt, value]);
+    if (!dirty && !isMouseOver) {
+      requestEditDimensionsId(editId, false, false);
+    } else {
+      requestEditDimensionsId(editId, true, dirty);
+    }
+  }, [dirty, editId, isMouseOver, requestEditDimensionsId, setHalt, value]);
+
+  const expanded = editDimensionsId === editId;
+
+  useEffect(() => {
+    if (expanded) {
+      resetValues();
+    }
+  }, [expanded, resetValues]);
 
   return (
     <div
       className={classNames(
         'grid-editor-cell-dimensions',
-        'grid-editor-floating-button',
         direction,
-        isMouseOver && 'expanded'
+        expanded && 'expanded'
       )}
-      style={
-        row?.id && column?.id
-          ? makeGridAreaStyle([row.id, column.id, 'span 1', 'span 1'])
-          : undefined
-      }
       {...listeners}
     >
-      {isMouseOver ? (
+      {expanded ? (
         <>
           <input
             type="text"
@@ -179,6 +207,7 @@ export const GridEditorCellDimensions = <ID extends string = string>({
               'grid-editor-cell-dimensions__value-input',
               valueError && 'error'
             )}
+            ref={inputRef}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             onKeyDown={handleKeyDown}
@@ -218,29 +247,25 @@ export const GridEditorCellDimensions = <ID extends string = string>({
               fr
             </div>
           </div>
-          {dirty ? (
-            <>
-              <button
-                className="grid-editor-cell-dimensions__commit-button"
-                data-action="cancel"
-                onClick={handleCommit}
-              >
-                <X size="14" color="#EB6232" />
-              </button>
-              <button
-                className="grid-editor-cell-dimensions__commit-button"
-                data-action="commit"
-                onClick={handleCommit}
-              >
-                <Check size="14" color="#48A22A" />
-              </button>
-            </>
-          ) : null}
+          <button
+            className="grid-editor-cell-dimensions__commit-button"
+            data-action="cancel"
+            disabled={!dirty}
+            onClick={handleCommit}
+          >
+            <X size="14" color="#EB6232" />
+          </button>
+          <button
+            className="grid-editor-cell-dimensions__commit-button"
+            data-action="commit"
+            disabled={!dirty}
+            onClick={handleCommit}
+          >
+            <Check size="14" color="#48A22A" />
+          </button>
         </>
-      ) : direction === 'row' ? (
-        getGridDimensionString(width ?? row?.height)
       ) : (
-        getGridDimensionString(height ?? column?.width)
+        getGridDimensionString(dimension)
       )}
     </div>
   );

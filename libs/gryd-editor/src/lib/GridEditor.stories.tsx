@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import styled from 'styled-components';
 
 import { withKnobs } from '@storybook/addon-knobs';
 import { GridEditor } from './GridEditor';
-import { GridLayout } from '@gryd/react';
+import { GridLayout, toGridDimension } from '@gryd/react';
 
 export default {
   title: 'GridEditor',
@@ -12,7 +13,7 @@ export default {
 };
 
 const GridEditorWrapper = styled.div`
-  width: 500px;
+  width: 600px;
   height: 500px;
 `;
 
@@ -30,15 +31,15 @@ const simpleLayout: GridLayout<Gutters> = {
       columns: [
         {
           id: Gutters.first,
-          width: '1fr',
+          width: toGridDimension('1fr')!,
         },
         {
           id: Gutters.middle,
-          width: '1fr',
+          width: toGridDimension('1fr')!,
         },
         {
           id: Gutters.last,
-          width: '1fr',
+          width: toGridDimension('1fr')!,
         },
         {
           id: Gutters.end,
@@ -47,15 +48,15 @@ const simpleLayout: GridLayout<Gutters> = {
       rows: [
         {
           id: Gutters.first,
-          height: '1fr',
+          height: toGridDimension('1fr')!,
         },
         {
           id: Gutters.middle,
-          height: '1fr',
+          height: toGridDimension('1fr')!,
         },
         {
           id: Gutters.last,
-          height: '1fr',
+          height: toGridDimension('1fr')!,
         },
         {
           id: Gutters.end,

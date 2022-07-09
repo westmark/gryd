@@ -6,8 +6,8 @@ export type OnDimensionChange<ID extends string = string> = (
 ) => void;
 
 export type CellRenderDefinition<ID extends string = string> = [
-  rows: GridRowLayout<ID>,
-  columns: GridColumnLayout<ID>,
+  rows: GridRowLayout<ID> & { index: number },
+  columns: GridColumnLayout<ID> & { index: number },
   showRowGutter: boolean,
   showColumnGutter: boolean,
   showRowDimensions: boolean,

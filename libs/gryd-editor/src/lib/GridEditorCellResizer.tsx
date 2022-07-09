@@ -4,7 +4,6 @@ import {
   GridRowLayout,
   makeGridAreaStyle,
 } from '@gryd/react';
-import { BoxSelect, Plus } from 'lucide-react';
 import React, {
   CSSProperties,
   useCallback,
@@ -20,7 +19,7 @@ export type OnGutterMoveCallback<ID extends string = string> = (
   pixels: number
 ) => void;
 
-interface GridEditorCellGutterProps<ID extends string = string> {
+interface GridEditorCellResizerProps<ID extends string = string> {
   direction: 'row' | 'column';
   row: GridRowLayout<ID>;
   column: GridColumnLayout<ID>;
@@ -28,13 +27,13 @@ interface GridEditorCellGutterProps<ID extends string = string> {
   onMove: OnGutterMoveCallback<ID>;
 }
 
-export const GridEditorCellGutter = <ID extends string = string>({
+export const GridEditorCellResizer = <ID extends string = string>({
   row,
   column,
   direction,
   gridBoundingBox,
   onMove,
-}: GridEditorCellGutterProps<ID>) => {
+}: GridEditorCellResizerProps<ID>) => {
   const gutterBarStyle = useMemo<CSSProperties | undefined>(() => {
     if (direction === 'row' && gridBoundingBox) {
       return {
@@ -43,23 +42,6 @@ export const GridEditorCellGutter = <ID extends string = string>({
     } else if (direction === 'column' && gridBoundingBox) {
       return {
         height: gridBoundingBox.height,
-      };
-    }
-    return {};
-  }, [direction, gridBoundingBox]);
-
-  const gutterAddStyle = useMemo<CSSProperties | undefined>(() => {
-    if (direction === 'row' && gridBoundingBox) {
-      return {
-        left: gridBoundingBox.width,
-        marginLeft: '1rem',
-        transform: 'translateY(-50%)',
-      };
-    } else if (direction === 'column' && gridBoundingBox) {
-      return {
-        top: gridBoundingBox.height,
-        marginTop: '1rem',
-        transform: 'translateX(-50%)',
       };
     }
     return {};
@@ -86,6 +68,7 @@ export const GridEditorCellGutter = <ID extends string = string>({
       moveData.current.direction === 'row' ? event.clientY : event.clientX;
     const diff = newPosition - (lastPosition.current ?? newPosition);
     lastPosition.current = newPosition;
+
     if (diff !== 0 && moveData.current.rowId && moveData.current.columnId) {
       moveData.current.onMove(
         moveData.current.direction,
@@ -139,10 +122,6 @@ export const GridEditorCellGutter = <ID extends string = string>({
         style={gutterBarStyle}
         onPointerDown={handlePointerDown}
       ></div>
-      <div className="grid-editor-cell-gutter-add" style={gutterAddStyle}>
-        <Plus size={16} />
-        <BoxSelect size={20} />
-      </div>
     </div>
   );
 };

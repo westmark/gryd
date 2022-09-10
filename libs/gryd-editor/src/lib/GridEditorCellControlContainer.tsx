@@ -156,9 +156,63 @@ export const GridEditorCellControlContainer = <ID extends string = string>({
 
   const handleAdd = useCallback<OnAddCallback<ID>>(
     (direction, afterRowId, afterColumnId) => {
-      //N
+      if (direction === 'row') {
+        const rowIndex = mediaQueryLayout.rows.findIndex(
+          (r) => r.id === afterRowId
+        );
+        if (rowIndex >= 0) {
+          const newMediaQueryLayout = update(mediaQueryLayout, {
+            rows: {
+              $splice: [
+                [
+                  rowIndex + 1,
+                  0,
+                  {
+                    id: `row-${Math.random().toString(32).substring(2)}` as ID,
+                    height: {
+                      unit: 'px',
+                      value: 50,
+                    },
+                  },
+                ],
+              ],
+            },
+          });
+          onMediaQueryChange(newMediaQueryLayout);
+        } else {
+          console.error('Unknown row id', afterRowId);
+        }
+      } else {
+        const columnIndex = mediaQueryLayout.columns.findIndex(
+          (c) => c.id === afterColumnId
+        );
+        if (columnIndex >= 0) {
+          const newMediaQueryLayout = update(mediaQueryLayout, {
+            columns: {
+              $splice: [
+                [
+                  columnIndex + 1,
+                  0,
+                  {
+                    id: `column-${Math.random()
+                      .toString(32)
+                      .substring(2)}` as ID,
+                    width: {
+                      unit: 'px',
+                      value: 50,
+                    },
+                  },
+                ],
+              ],
+            },
+          });
+          onMediaQueryChange(newMediaQueryLayout);
+        } else {
+          console.error('Unknown column id', afterColumnId);
+        }
+      }
     },
-    []
+    [mediaQueryLayout, onMediaQueryChange]
   );
 
   const rowDimensions = useMemo(

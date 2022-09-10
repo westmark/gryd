@@ -24,7 +24,7 @@ enum Gutters {
   end = 'end',
 }
 
-const simpleLayout: GridLayout<Gutters> = {
+const simpleLayout: GridLayout = {
   mediaQueries: [
     {
       minWidth: 0,

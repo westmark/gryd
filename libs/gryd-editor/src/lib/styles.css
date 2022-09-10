@@ -214,6 +214,10 @@
   transform: translate(-50%, -50%);
 }
 
+.grid-editor-cell-gutter-add__column {
+  margin-top: 0.2rem;
+}
+
 .grid-editor-cell-gutter-wrapper {
   position: relative;
   width: 100%;

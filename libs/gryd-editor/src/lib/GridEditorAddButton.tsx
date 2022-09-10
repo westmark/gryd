@@ -31,7 +31,7 @@ export const GridEditorAddButton = <ID extends string = string>({
   gridBoundingBox,
   onAdd,
 }: GridEditorAddButtonProps<ID>) => {
-  const addButtonStyle = useMemo<CSSProperties | undefined>(() => {
+  const zeroIndexButtonStyle = useMemo<CSSProperties | undefined>(() => {
     if (direction === 'row' && gridBoundingBox) {
       return {
         left: gridBoundingBox.width,
@@ -41,16 +41,34 @@ export const GridEditorAddButton = <ID extends string = string>({
     } else if (direction === 'column' && gridBoundingBox) {
       return {
         top: gridBoundingBox.height,
-        marginTop: '1rem',
         transform: 'translateX(-50%)',
       };
     }
     return {};
   }, [direction, gridBoundingBox]);
 
+  const addButtonStyle = useMemo<CSSProperties | undefined>(() => {
+    if (direction === 'row' && gridBoundingBox) {
+      return {
+        ...zeroIndexButtonStyle,
+        top: '100%',
+      };
+    } else if (direction === 'column' && gridBoundingBox) {
+      return {
+        ...zeroIndexButtonStyle,
+        left: '100%',
+      };
+    }
+    return {};
+  }, [direction, gridBoundingBox, zeroIndexButtonStyle]);
+
   const handleAdd = useCallback(() => {
-    // N
-  }, []);
+    onAdd(
+      direction,
+      direction === 'row' && row.id ? row.id : null,
+      direction === 'column' && column.id ? column.id : null
+    );
+  }, [column.id, direction, onAdd, row.id]);
 
   return (
     <div
@@ -63,6 +81,18 @@ export const GridEditorAddButton = <ID extends string = string>({
       ])}
       data-key={`gutter-${row.id}-${column.id}`}
     >
+      {direction === 'row' && rowIndex === 0 ? (
+        <div
+          className={`grid-editor-cell-gutter-add grid-editor-cell-gutter-add__${direction}`}
+          style={zeroIndexButtonStyle}
+          role="button"
+          aria-label="Add"
+          onClick={handleAdd}
+        >
+          <Plus size={16} />
+          <BoxSelect size={20} />
+        </div>
+      ) : null}
       <div
         className={`grid-editor-cell-gutter-add grid-editor-cell-gutter-add__${direction}`}
         style={addButtonStyle}

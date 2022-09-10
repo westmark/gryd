@@ -57,7 +57,7 @@ export const GridEditorCellDimensions = <ID extends string = string>({
   }, [dirty, editDimensionsId, editId, requestEditDimensionsId, valueError]);
 
   const { setHalt, isMouseOver, ...listeners } = useMouseHover({
-    leaveTimeout: 1000,
+    leaveTimeout: 300,
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave,
   });
